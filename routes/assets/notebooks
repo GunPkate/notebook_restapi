@@ -1,0 +1,45 @@
+var express = require('express')
+var {Router} = require('express')
+const mongoose = require('mongoose')
+const router = express.Router();
+
+// mongoose.connect('mongodb://localhost:27017/my_assets');
+mongoose.connect('mongodb://localhost/my_assets')
+    .then(()=>console.log('connected to MongoDB'))
+        .catch(()=>console.error('Connection error: ',error));
+
+    const notebookSchema = new mongoose.Schema({
+
+        asset_code:{     type: String,require: true},
+        brand:{         type: String,require: true   },
+        moidel:{        type: String,require: true},
+        serial:{        type: String,require: true},
+        status:{        type: Boolean,require: true},
+        waranty:{       type: Number,require: true},
+        purchase_date:{  type: Date,require: true},
+        remark:{        type: String,}
+    },
+    { collection:'notebooks',versionKey: false}
+    )
+
+    const Notebooks = mongoose.model('notebooks',notebookSchema)
+
+router.get('/notebook/getall',(req,res)=>{
+    try {
+        Notebooks.find({},function(error,findallnotebook){
+            const result = findallnotebook;
+            console.log("result: ",result);
+            res.send(result);
+        });
+    } catch (error) {
+        console.log("get api error",error)
+    }
+})
+
+router.post('/notebook/create',(req,res)=>{
+    Notebooks.create({
+
+    },function(error,checkResult){})
+})
+
+module.exports = router;
