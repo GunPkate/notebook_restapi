@@ -1,5 +1,5 @@
 var express = require('express')
-var {Router} = require('express')
+var {Router, request} = require('express')
 const mongoose = require('mongoose')
 const router = express.Router();
 
@@ -12,7 +12,7 @@ mongoose.connect('mongodb://localhost/my_assets')
 
         asset_code:{     type: String,require: true},
         brand:{         type: String,require: true   },
-        moidel:{        type: String,require: true},
+        model:{        type: String,require: true},
         serial:{        type: String,require: true},
         status:{        type: Boolean,require: true},
         waranty:{       type: Number,require: true},
@@ -40,10 +40,45 @@ router.get('/notebook/getall',(req,res)=>{
     }
 })
 
-router.post('/notebook/create',(req,res)=>{
-    Notebooks.create({
+router.post('/notebook/create', async (req,res)=>{
+    try {
+    // console.log(req.body.brand);
+    const data = req.body
+    // console.log(body,"here");
+    // Notebooks.find({"brand":`${req.body.brand}`,"serial":`${req.body.serial}`},(error,find_result)=>{
 
-    },function(error,checkResult){})
+        //  Notebooks.find({"brand":`${req.body.brand}`},async (error,find_result)=>{
+        //     console.log(find_result)
+        //     if(find_result){
+        //         res.send({
+        //             "resultcode": 40900,
+        //             "resultDescription": "Duplicated data",
+        //         })
+        //     }else{
+                
+                  const creatednotebook = await Notebooks.create( {      
+                    "brand" : data.brand,
+                    "asset_code": data.asset_code,
+                    "moidel" : data.model,
+                    "serial" : data.serial,
+                    "status": data.status,
+                    "waranty" : data.status,
+                    "purchase_date": Date.now(),
+                    "remark": data.remark
+                })
+                console.log("created",creatednotebook)
+                res.status(200).json({
+                    resultCode: 20000,
+                    resultDescription: error.message
+                })
+            // }
+        // })
+    } catch (error) {
+        res.status(500).json({
+            resultCode: 50000,
+            resultDescription: error.message
+        })
+    }
 })
 
 module.exports = router;
