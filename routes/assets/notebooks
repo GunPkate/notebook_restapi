@@ -81,4 +81,25 @@ router.post('/notebook/create', async (req,res)=>{
     }
 })
 
+router.put('/notebook/update',(req,res)=>{
+    const {asset_code} = req.body ,data = req.body
+    // console.log(req.body)
+    Notebooks.findOneAndUpdate({asset_code:asset_code},{
+        "brand" : data.brand,
+        "asset_code": data.asset_code,
+        "model" : data.model,
+        "serial" : data.serial,
+        "status": data.status,
+        "waranty" : data.status,
+        "remark": data.remark
+    },(err,founddata)=>{
+        // console.log(founddata)
+        res.send(res.statusCode(200).json({
+            resultCode: 20000,
+            resultDescription: "Update Success",
+            resultData: founddata
+        }))
+    })
+})
+
 module.exports = router;
