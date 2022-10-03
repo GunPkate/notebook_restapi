@@ -29,7 +29,11 @@ router.get('/notebook/getall',(req,res)=>{
         Notebooks.find({},function(error,findallnotebook){
             const result = findallnotebook;
             console.log("result: ",result);
-            res.send(result);
+            res.send({
+                resultCode: 20000,
+                resultDescription: "success",
+                resultData: result
+            });
         });
     } catch (error) {
         console.log("get api error",error)
