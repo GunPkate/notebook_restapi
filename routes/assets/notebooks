@@ -49,8 +49,8 @@ router.post('/notebook/create',async (req,res)=>{
     // Notebooks.find({"brand":`${req.body.brand}`,"serial":`${req.body.serial}`},(error,find_result)=>{
 
         Notebooks.find({"brand":`${req.body.brand}`},async (error,find_result)=>{
-            console.log(find_result !== null | undefined)
-            if(find_result){
+            console.log(find_result)
+            if(find_result!== null | undefined){
                 res.send({
                     "resultcode": 40900,
                     "resultDescription": "Duplicated data",
