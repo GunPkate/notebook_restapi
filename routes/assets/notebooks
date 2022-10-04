@@ -38,31 +38,35 @@ router.get('/notebook/getall',(req,res)=>{
         });
     } catch (error) {
         console.log("get api error",error)
+        res.status(500).json(({
+            resultCode: 50000,
+            resultDescription: "error",
+            resultData: error
+        }));
     }
 })
 
 router.post('/notebook/create',async (req,res)=>{
     try {
-    console.log(req.body.brand,": brand");
     const data = req.body
-    console.log(data,"data");
     // Notebooks.find({"brand":`${req.body.brand}`,"serial":`${req.body.serial}`},(error,find_result)=>{
 
         Notebooks.find({"asset_code":`${req.body.asset_code}`},async (error,find_result)=>{
-            console.log(find_result.length)
+            console.log("count: created",find_result.length)
             if(find_result.length > 0){
                 res.send({
                     "resultcode": 40900,
                     "resultDescription": "Duplicated data",
                 })
             }else{
+                console.log(data)
                   const creatednotebook = await Notebooks.create( {      
                     "brand" : data.brand,
                     "asset_code": data.asset_code,
                     "model" : data.model,
                     "serial" : data.serial,
                     "status": data.status,
-                    "warranty" : data.status,
+                    "warranty" : data.warranty,
                     "warranty_date": data.warranty_date|Date.now(),
                     "purchase_date": data.purchase_date|Date.now(),
                     "remark": data.remark
