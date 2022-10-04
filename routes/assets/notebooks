@@ -41,22 +41,21 @@ router.get('/notebook/getall',(req,res)=>{
     }
 })
 
-router.post('/notebook/create', async (req,res)=>{
+router.post('/notebook/create',async (req,res)=>{
     try {
-    // console.log(req.body.brand);
+    console.log(req.body.brand,": brand");
     const data = req.body
-    // console.log(body,"here");
+    console.log(data,"data");
     // Notebooks.find({"brand":`${req.body.brand}`,"serial":`${req.body.serial}`},(error,find_result)=>{
 
-        //  Notebooks.find({"brand":`${req.body.brand}`},async (error,find_result)=>{
-        //     console.log(find_result)
-        //     if(find_result){
-        //         res.send({
-        //             "resultcode": 40900,
-        //             "resultDescription": "Duplicated data",
-        //         })
-        //     }else{
-                
+        Notebooks.find({"brand":`${req.body.brand}`},async (error,find_result)=>{
+            console.log(find_result !== null | undefined)
+            if(find_result){
+                res.send({
+                    "resultcode": 40900,
+                    "resultDescription": "Duplicated data",
+                })
+            }else{
                   const creatednotebook = await Notebooks.create( {      
                     "brand" : data.brand,
                     "asset_code": data.asset_code,
@@ -71,10 +70,11 @@ router.post('/notebook/create', async (req,res)=>{
                 console.log("created",creatednotebook)
                 res.status(200).json({
                     resultCode: 20000,
-                    resultDescription: error.message
+                    resultDescription: `Notebook ${data.brand} created`,
+                    resultData: creatednotebook
                 })
-            // }
-        // })
+            }
+        })
     } catch (error) {
         res.status(500).json({
             resultCode: 50000,
@@ -110,6 +110,15 @@ router.put('/notebook/update',(req,res)=>{
             resultDescription: error,
         })
     }
+})
+
+router.delete('/notebook/delete',(req,res)=>{
+    Notebooks.findOneAndDelete({},(err,data)=>{
+        console.log(data)
+        if(data){
+
+        }
+    })
 })
 
 module.exports = router;
