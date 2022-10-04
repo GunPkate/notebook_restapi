@@ -113,12 +113,26 @@ router.put('/notebook/update',(req,res)=>{
 })
 
 router.delete('/notebook/delete',(req,res)=>{
-    Notebooks.findOneAndDelete({},(err,data)=>{
-        console.log(data)
-        if(data){
+    try {
+        // console.log(req.body.asset_code);
+        const delete_id = req.body.asset_code;
+        console.log(delete_id);
+        Notebooks.findOneAndDelete({asset_code:delete_id},(err,data)=>{
+            console.log(data);
+            if(data){
+                res.status(200).json({
+                    resultCode: 20000,
+                    resultDescription: data,
+                })
+            }
+        })
+    } catch (error) {
+        res.status(500).json({
+            resultCode: 50000,
+            resultDescription: error,
+        })
+    }
 
-        }
-    })
 })
 
 module.exports = router;
