@@ -15,7 +15,8 @@ mongoose.connect('mongodb://localhost/my_assets')
         model:{        type: String,require: true},
         serial:{        type: String,require: true},
         status:{        type: Boolean,require: true},
-        waranty:{       type: Number,require: true},
+        warranty:{       type: Number,require: true},
+        warranty_date:{  type: Date,require: true},
         purchase_date:{  type: Date,require: true},
         remark:{        type: String,}
     },
@@ -62,8 +63,9 @@ router.post('/notebook/create', async (req,res)=>{
                     "moidel" : data.model,
                     "serial" : data.serial,
                     "status": data.status,
-                    "waranty" : data.status,
-                    "purchase_date": Date.now(),
+                    "warranty" : data.status,
+                    "warranty_date": data.warranty_date|Date.now(),
+                    "purchase_date": data.purchase_date|Date.now(),
                     "remark": data.remark
                 })
                 console.log("created",creatednotebook)
@@ -92,7 +94,7 @@ router.put('/notebook/update',(req,res)=>{
             "serial" : data.serial,
             "status": data.status,
             // "purchase_date":data.purchase_date,
-            "waranty" : data.status,
+            "warranty" : data.status,
             "remark": data.remark
         },(err,founddata)=>{
             // console.log(founddata)
