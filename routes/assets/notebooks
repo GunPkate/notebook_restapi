@@ -97,7 +97,8 @@ router.put('/notebook/update',(req,res)=>{
             "model" : data.model,
             "serial" : data.serial,
             "status": data.status,
-            // "purchase_date":data.purchase_date,
+            "purchase_date":data.purchase_date,
+            "warranty_date":data.warranty_date,
             "warranty" : data.status,
             "remark": data.remark
         },(err,founddata)=>{
@@ -116,12 +117,12 @@ router.put('/notebook/update',(req,res)=>{
     }
 })
 
-router.delete('/notebook/delete:code',(req,res)=>{
+router.delete('/notebook/delete',(req,res)=>{
     try {
-        // console.log(req.body.asset_code);
-        // const delete_id = req.body.asset_code;
+        console.log(req.body.asset_code);
+        const delete_id = req.body.asset_code;
         // console.log(delete_id);
-        const delete_id = req.params.code;
+        // const delete_id = req.params.code;
         console.log(delete_id);
         Notebooks.findOneAndDelete({asset_code:delete_id},(err,data)=>{
             // console.log(data);
