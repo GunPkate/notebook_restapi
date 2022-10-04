@@ -59,7 +59,7 @@ router.post('/notebook/create',async (req,res)=>{
                   const creatednotebook = await Notebooks.create( {      
                     "brand" : data.brand,
                     "asset_code": data.asset_code,
-                    "moidel" : data.model,
+                    "model" : data.model,
                     "serial" : data.serial,
                     "status": data.status,
                     "warranty" : data.status,
