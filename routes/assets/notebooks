@@ -178,8 +178,28 @@ router.delete('/notebook/delete',(req,res)=>{
             resultCode: 50000,
             resultDescription: error,
         })
-    }
+    }   
+})
 
+router.delete('/notebook/delete:code',(req,res)=>{
+    try {
+        const delete_id = req.params.code;
+        console.log(delete_id);
+        Notebooks.findOneAndDelete({asset_code:delete_id},(err,data)=>{
+            // console.log(data);
+            if(data){
+                res.status(200).json({
+                    resultCode: 20000,
+                    resultDescription: data,
+                })
+            }
+        })
+    } catch (error) {
+        res.status(500).json({
+            resultCode: 50000,
+            resultDescription: error,
+        })
+    }  
 })
 
 module.exports = router;
