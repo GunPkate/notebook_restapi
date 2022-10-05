@@ -24,6 +24,8 @@ mongoose.connect('mongodb://localhost/my_assets')
     )
 
     const Notebooks = mongoose.model('notebooks',notebookSchema)
+    const idSchema = new mongoose.Schema({id:{ type:Number}},{collection:'runningID',versionKey: false})
+    const runningID = mongoose.model('id',idSchema)
 
 router.get('/notebook/getall',(req,res)=>{
     try {
@@ -43,6 +45,44 @@ router.get('/notebook/getall',(req,res)=>{
             resultDescription: "error",
             resultData: error
         }));
+    }
+})
+
+router.get('/notebook/getrunningid',(req,res)=>{
+    try {
+        let code = "";
+        const dt = new Date();
+        let r_id = 0;
+        console.log(dt)
+        runningID.findOne({},(error,get_id)=>{
+            console.log(get_id,get_id.id)
+            r_id = get_id.id
+            if(get_id.id === null|undefined){runningID.create({id:1});}
+            else if(get_id.id >= 0){
+                r_id +=1
+                if(get_id.id >= 1000){runningID.findOneAndUpdate({},{"id":0 },(error,reset_data)=>{
+                    console.log(reset_data)
+                })}
+                else if(get_id.id <1000){
+                    runningID.findOneAndUpdate({},{"id":r_id },(error,update_data)=>{})
+                }
+                else{r_id = 0}
+                const formatID = (r_id <100 && r_id >=10? "0"+r_id:(r_id <10? "00"+r_id:r_id))
+                code = dt.getFullYear()+""+dt.getMonth()+""+formatID;
+                console.log(code)
+            }
+
+            res.status(200).json({
+                resultCode: 20000,
+                resultDescription: "RunningID success",
+                resultData: code
+            })
+        })
+    } catch (error) {
+        res.status(500).json({
+            resultCode: 50000,
+            resultDescription: error,
+        })
     }
 })
 
