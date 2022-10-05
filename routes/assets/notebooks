@@ -181,7 +181,7 @@ router.delete('/notebook/delete',(req,res)=>{
     }   
 })
 
-router.delete('/notebook/delete:code',(req,res)=>{
+router.delete('/notebook/delete/:code',(req,res)=>{
     try {
         const delete_id = req.params.code;
         console.log(delete_id);
