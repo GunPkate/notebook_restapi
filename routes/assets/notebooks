@@ -171,6 +171,11 @@ router.delete('/notebook/delete',(req,res)=>{
                     resultCode: 20000,
                     resultDescription: data,
                 })
+        }else{
+                return res.status(400).json({
+                    resultCode: 40000,
+                    resultDescription: "Data not found"
+                })
             }
         })
     } catch (error) {
@@ -181,16 +186,21 @@ router.delete('/notebook/delete',(req,res)=>{
     }   
 })
 
-router.delete('/notebook/delete/:code',(req,res)=>{
+router.delete('/notebook/deleteparam/:code',(req,res)=>{
     try {
         const delete_id = req.params.code;
         console.log(delete_id);
         Notebooks.findOneAndDelete({asset_code:delete_id},(err,data)=>{
             // console.log(data);
-            if(data){
+            if(data&&data.length>0){
                 res.status(200).json({
                     resultCode: 20000,
                     resultDescription: data,
+                })
+            }else{
+                return res.status(400).json({
+                    resultCode: 40000,
+                    resultDescription: "Data not found"
                 })
             }
         })
