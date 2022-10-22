@@ -1,215 +1,238 @@
-var express = require('express')
-var {Router, request} = require('express')
-const mongoose = require('mongoose')
+var express = require("express");
+var { Router, request } = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 
 // mongoose.connect('mongodb://localhost:27017/my_assets');
-mongoose.connect('mongodb://localhost/my_assets')
-    .then(()=>console.log('connected to MongoDB'))
-        .catch(()=>console.error('Connection error: ',error));
+// mongoose.connect('mongodb://localhost/my_assets')
+//     .then(()=>console.log('connected to MongoDB'))
+//         .catch(()=>console.error('Connection error: ',error));
 
-    const notebookSchema = new mongoose.Schema({
+const notebookSchema = new mongoose.Schema(
+  {
+    asset_code: { type: String, require: true },
+    brand: { type: String, require: true },
+    model: { type: String, require: true },
+    serial: { type: String, require: true },
+    status: { type: String, require: true },
+    warranty: { type: Number, require: true },
+    warranty_date: { type: Date, require: true },
+    purchase_date: { type: Date, require: true },
+    remark: { type: String },
+  },
+  { collection: "notebooks", versionKey: false }
+);
 
-        asset_code:{     type: String,require: true},
-        brand:{         type: String,require: true   },
-        model:{        type: String,require: true},
-        serial:{        type: String,require: true},
-        status:{        type: String,require: true},
-        warranty:{       type: Number,require: true},
-        warranty_date:{  type: Date,require: true},
-        purchase_date:{  type: Date,require: true},
-        remark:{        type: String,}
-    },
-    { collection:'notebooks',versionKey: false}
-    )
+const Notebooks = mongoose.model("notebooks", notebookSchema);
+const idSchema = new mongoose.Schema(
+  { id: { type: Number } },
+  { collection: "runningID", versionKey: false }
+);
+const runningID = mongoose.model("id", idSchema);
 
-    const Notebooks = mongoose.model('notebooks',notebookSchema)
-    const idSchema = new mongoose.Schema({id:{ type:Number}},{collection:'runningID',versionKey: false})
-    const runningID = mongoose.model('id',idSchema)
+router.get("/notebook/getall", (req, res) => {
+  try {
+    Notebooks.find({}, function (error, findallnotebook) {
+      const result = findallnotebook;
+      console.log("result: ", result.length);
+      res.status(200).json({
+        resultCode: 20000,
+        resultDescription: "success",
+        resultData: result,
+      });
+    });
+  } catch (error) {
+    console.log("get api error", error);
+    res.status(500).json({
+      resultCode: 50000,
+      resultDescription: "error",
+      resultData: error,
+    });
+  }
+});
 
-router.get('/notebook/getall',(req,res)=>{
-    try {
-        Notebooks.find({},function(error,findallnotebook){
-            const result = findallnotebook;
-            console.log("result: ",result.length);
-            res.status(200).json(({
-                resultCode: 20000,
-                resultDescription: "success",
-                resultData: result
-            }));
-        });
-    } catch (error) {
-        console.log("get api error",error)
-        res.status(500).json(({
-            resultCode: 50000,
-            resultDescription: "error",
-            resultData: error
-        }));
-    }
-})
+router.get("/notebook/getrunningid", (req, res) => {
+  try {
+    let code = "";
+    const dt = new Date();
+    let r_id = 0;
+    console.log(dt);
+    runningID.findOne({}, (error, get_id) => {
+      console.log(get_id, get_id.id);
+      r_id = get_id.id;
+      if ((get_id.id === null) | undefined) {
+        runningID.create({ id: 1 });
+      } else if (get_id.id >= 0) {
+        r_id += 1;
+        if (get_id.id >= 1000) {
+          runningID.findOneAndUpdate({}, { id: 0 }, (error, reset_data) => {
+            console.log(reset_data);
+          });
+        } else if (get_id.id < 1000) {
+          runningID.findOneAndUpdate(
+            {},
+            { id: r_id },
+            (error, update_data) => {}
+          );
+        } else {
+          r_id = 0;
+        }
+        const formatID =
+          r_id < 100 && r_id >= 10
+            ? "0" + r_id
+            : r_id < 10
+            ? "00" + r_id
+            : r_id;
+        code = dt.getFullYear() + "" + dt.getMonth() + "" + formatID;
+        console.log(code);
+      }
 
-router.get('/notebook/getrunningid',(req,res)=>{
-    try {
-        let code = "";
-        const dt = new Date();
-        let r_id = 0;
-        console.log(dt)
-        runningID.findOne({},(error,get_id)=>{
-            console.log(get_id,get_id.id)
-            r_id = get_id.id
-            if(get_id.id === null|undefined){runningID.create({id:1});}
-            else if(get_id.id >= 0){
-                r_id +=1
-                if(get_id.id >= 1000){runningID.findOneAndUpdate({},{"id":0 },(error,reset_data)=>{
-                    console.log(reset_data)
-                })}
-                else if(get_id.id <1000){
-                    runningID.findOneAndUpdate({},{"id":r_id },(error,update_data)=>{})
-                }
-                else{r_id = 0}
-                const formatID = (r_id <100 && r_id >=10? "0"+r_id:(r_id <10? "00"+r_id:r_id))
-                code = dt.getFullYear()+""+dt.getMonth()+""+formatID;
-                console.log(code)
-            }
+      res.status(200).json({
+        resultCode: 20000,
+        resultDescription: "RunningID success",
+        resultData: code,
+      });
+    });
+  } catch (error) {
+    res.status(500).json({
+      resultCode: 50000,
+      resultDescription: error,
+    });
+  }
+});
 
-            res.status(200).json({
-                resultCode: 20000,
-                resultDescription: "RunningID success",
-                resultData: code
-            })
-        })
-    } catch (error) {
-        res.status(500).json({
-            resultCode: 50000,
-            resultDescription: error,
-        })
-    }
-})
-
-router.post('/notebook/create',async (req,res)=>{
-    try {
-    const data = req.body
+router.post("/notebook/create", async (req, res) => {
+  try {
+    const data = req.body;
     // Notebooks.find({"brand":`${req.body.brand}`,"serial":`${req.body.serial}`},(error,find_result)=>{
 
-        Notebooks.find({"asset_code":`${req.body.asset_code}`},async (error,find_result)=>{
-            console.log("count: created",find_result.length)
-            if(find_result.length > 0){
-                res.send({
-                    "resultcode": 40900,
-                    "resultDescription": "Duplicated data",
-                })
-            }else{
-                console.log(data)
-                  const creatednotebook = await Notebooks.create( {      
-                    "brand" : data.brand,
-                    "asset_code": data.asset_code,
-                    "model" : data.model,
-                    "serial" : data.serial,
-                    "status": data.status,
-                    "warranty" : data.warranty,
-                    "warranty_date": data.warranty_date|Date.now(),
-                    "purchase_date": data.purchase_date|Date.now(),
-                    "remark": data.remark
-                })
-                console.log("created",creatednotebook)
-                res.status(200).json({
-                    resultCode: 20000,
-                    resultDescription: `Notebook ${data.brand} created`,
-                    resultData: creatednotebook
-                })
-            }
-        })
-    } catch (error) {
-        res.status(500).json({
-            resultCode: 50000,
-            resultDescription: error.message
-        })
-    }
-})
+    Notebooks.find(
+      { asset_code: `${req.body.asset_code}` },
+      async (error, find_result) => {
+        console.log("count: created", find_result.length);
+        if (find_result.length > 0) {
+          res.send({
+            resultcode: 40900,
+            resultDescription: "Duplicated data",
+          });
+        } else {
+          console.log(data);
+          const creatednotebook = await Notebooks.create({
+            brand: data.brand,
+            asset_code: data.asset_code,
+            model: data.model,
+            serial: data.serial,
+            status: data.status,
+            warranty: data.warranty,
+            warranty_date: data.warranty_date | Date.now(),
+            purchase_date: data.purchase_date | Date.now(),
+            remark: data.remark,
+          });
+          console.log("created", creatednotebook);
+          res.status(200).json({
+            resultCode: 20000,
+            resultDescription: `Notebook ${data.brand} created`,
+            resultData: creatednotebook,
+          });
+        }
+      }
+    );
+  } catch (error) {
+    res.status(500).json({
+      resultCode: 50000,
+      resultDescription: error.message,
+    });
+  }
+});
 
-router.put('/notebook/update',(req,res)=>{
-    try {
-        const {asset_code} = req.body ,data = req.body
-        // console.log(req.body)
-        Notebooks.findOneAndUpdate({asset_code:asset_code},{
-            "brand" : data.brand,
-            "asset_code": data.asset_code,
-            "model" : data.model,
-            "serial" : data.serial,
-            "status": data.status,
-            "purchase_date":data.purchase_date,
-            "warranty_date":data.warranty_date,
-            "warranty" : data.status,
-            "remark": data.remark
-        },(err,founddata)=>{
-            // console.log(founddata)
-            res.status(200).json({
-                resultCode: 20000,
-                resultDescription: "Update Success",
-                resultData: founddata
-            })
-        })
-    } catch (error) {
-        res.status(500).json({
-            resultCode: 50000,
-            resultDescription: error,
-        })
-    }
-})
+router.put("/notebook/update", (req, res) => {
+  try {
+    const { asset_code } = req.body,
+      data = req.body;
+    // console.log(req.body)
+    Notebooks.findOneAndUpdate(
+      { asset_code: asset_code },
+      {
+        brand: data.brand,
+        asset_code: data.asset_code,
+        model: data.model,
+        serial: data.serial,
+        status: data.status,
+        purchase_date: data.purchase_date,
+        warranty_date: data.warranty_date,
+        warranty: data.status,
+        remark: data.remark,
+      },
+      (err, founddata) => {
+        // console.log(founddata)
+        res.status(200).json({
+          resultCode: 20000,
+          resultDescription: "Update Success",
+          resultData: founddata,
+        });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({
+      resultCode: 50000,
+      resultDescription: error,
+    });
+  }
+});
 
-router.delete('/notebook/delete',(req,res)=>{
-    try {
-        console.log(req.body.asset_code);
-        const delete_id = req.body.asset_code;
-        // console.log(delete_id);
-        // const delete_id = req.params.code;
-        console.log(delete_id);
-        Notebooks.findOneAndDelete({asset_code:delete_id},(err,data)=>{
-            // console.log(data);
-            if(data){
-                res.status(200).json({
-                    resultCode: 20000,
-                    resultDescription: data,
-                })
-        }else{
-                return res.status(400).json({
-                    resultCode: 40000,
-                    resultDescription: "Data not found"
-                })
-            }
-        })
-    } catch (error) {
-        res.status(500).json({
-            resultCode: 50000,
-            resultDescription: error,
-        })
-    }   
-})
+router.delete("/notebook/delete", (req, res) => {
+  try {
+    console.log(req.body.asset_code);
+    const delete_id = req.body.asset_code;
+    // console.log(delete_id);
+    // const delete_id = req.params.code;
+    console.log(delete_id);
+    Notebooks.findOneAndDelete({ asset_code: delete_id }, (err, data) => {
+      // console.log(data);
+      if (data) {
+        res.status(200).json({
+          resultCode: 20000,
+          resultDescription: data,
+        });
+      } else {
+        return res.status(400).json({
+          resultCode: 40000,
+          resultDescription: "Data not found",
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      resultCode: 50000,
+      resultDescription: error,
+    });
+  }
+});
 
-router.delete('/notebook/deleteparam/:code',(req,res)=>{
-    try {
-        const delete_id = req.params.code;
-        console.log(delete_id);
-        Notebooks.findOneAndDelete({asset_code:delete_id},(err,data)=>{
-            // console.log(data);
-            if(data&&data.length>0){
-                res.status(200).json({
-                    resultCode: 20000,
-                    resultDescription: data,
-                })
-            }else{
-                return res.status(400).json({
-                    resultCode: 40000,
-                    resultDescription: "Data not found"
-                })
-            }
-        })
-    } catch (error) {
-        res.status(500).json({
-            resultCode: 50000,
-            resultDescription: error,
-        })
-    }  
-})
+router.delete("/notebook/deleteparam/:code", (req, res) => {
+  try {
+    const delete_id = req.params.code;
+    console.log(delete_id);
+    Notebooks.findOneAndDelete({ asset_code: delete_id }, (err, data) => {
+      // console.log(data);
+      if (data && data.length > 0) {
+        res.status(200).json({
+          resultCode: 20000,
+          resultDescription: data,
+        });
+      } else {
+        return res.status(400).json({
+          resultCode: 40000,
+          resultDescription: "Data not found",
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      resultCode: 50000,
+      resultDescription: error,
+    });
+  }
+});
 
 module.exports = router;

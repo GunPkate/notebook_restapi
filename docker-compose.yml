@@ -1,0 +1,41 @@
+version: '3.9'
+services: 
+  mongo:
+    image: mongo
+    container_name: notebook_mongo 
+    restart: always
+    ports: 
+      - 27017:27017
+    volumes:
+      - ./asset:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongoadmin
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+      - MONGO_INITDB_DATABASE=start
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: mongoadmin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: secret
+      ME_CONFIG_MONGODB_URL: mongodb://mongoadmin:secret@mongo:27017/
+    depends_on:
+      - mongo
+  expressapi:
+    build: .
+    image: notebook_restapi:0.1
+    container_name: notebook
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      - PORT=3000
+      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_USER=mongoadmin      
+      - MONGO_PASS=secret
+      - DBMONGO=start      
+    depends_on:
+      - mongo
+
